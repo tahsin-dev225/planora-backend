@@ -1,0 +1,13 @@
+node_modules
+.env
+.env.*
+!.env.example
+dist
+.vscode
+.idea
+.antigravity
+.agent
+
+
+/src/generated
+/generated/prisma
