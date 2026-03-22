@@ -1,0 +1,15 @@
+model Participant {
+  id String @id @default(uuid())
+
+  userId  String
+  eventId String
+
+  status ParticipantStatus @default(PENDING)
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  payment Payment? @relation("ParticipantPayment")
+
+  createdAt DateTime @default(now())
+}

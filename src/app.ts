@@ -4,7 +4,7 @@ import { notFound } from "./app/midlewere/notFound";
 import status from "http-status";
 import cookieParser from "cookie-parser";
 import { toNodeHandler } from "better-auth/node";
-// import auth from "./app/lib/auth";
+import auth from "./app/lib/auth";
 import path from "path";
 import cors from "cors";
 import { envVars } from "./config/env";
@@ -32,7 +32,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-// app.use("/api/auth", toNodeHandler(auth))
+app.use("/api/auth", toNodeHandler(auth))
 
 // Enable URL-encoded form data parsing
 app.use(express.urlencoded({ extended: true }));
