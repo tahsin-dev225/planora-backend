@@ -1,7 +1,7 @@
 import status from "http-status";
 import AppError from "../../errorHalpers/AppError";
 import { prisma } from "../../lib/prisma";
-import { ICreateEvent, IQuery } from "./event.interface"
+import { IAdminUpdateEvent, ICreateEvent, IQuery, IUserUpdateEvent } from "./event.interface"
 
 // model Event {
 //   id          String   @id @default(uuid())
@@ -125,15 +125,35 @@ const getSingleEvent = async (id: string) => {
         },
       },
       reviews: true,
-      payments: true,
+      // payments: true,
     },
   });
 
   return result;
 };
 
+const getMyEvents = async (userId: string) => {
+  const result = await prisma.event.findMany({
+    where: {
+      organizerId: userId
+    },
+    include: {
+      organizer: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      reviews: true,
+      payments: true,
+    },
+  })
 
-const updateEvent = async (id: string, payload: ICreateEvent, userId: string) => {
+  return result;
+}
+
+const updateEvent = async (id: string, payload: IUserUpdateEvent, userId: string) => {
 
   const isUser = await prisma.user.findUnique({
     where: {
@@ -162,14 +182,6 @@ const updateEvent = async (id: string, payload: ICreateEvent, userId: string) =>
     data: {
       title: payload.title,
       description: payload.description,
-      date: new Date(payload.date),
-      time: payload.time,
-      venue: payload.venue,
-      banner: payload.banner,
-      type: payload.type,
-      fee: payload.fee,
-      isPaid: payload.isPaid,
-      organizerId: payload.organizerId,
     }
   })
 
@@ -186,22 +198,13 @@ const deleteEvent = async (id: string) => {
   return result;
 }
 
-const updateAdminEvent = async (id: string, payload: ICreateEvent) => {
+const updateAdminEvent = async (id: string, payload: IAdminUpdateEvent) => {
   const result = await prisma.event.update({
     where: {
       id
     },
     data: {
-      title: payload.title,
-      description: payload.description,
-      date: new Date(payload.date),
-      time: payload.time,
-      venue: payload.venue,
-      banner: payload.banner,
       type: payload.type,
-      fee: payload.fee,
-      isPaid: payload.isPaid,
-      organizerId: payload.organizerId,
     }
   })
 
@@ -212,6 +215,7 @@ export const eventService = {
   createEvent,
   getAllEvents,
   getSingleEvent,
+  getMyEvents,
   updateEvent,
   deleteEvent,
   updateAdminEvent

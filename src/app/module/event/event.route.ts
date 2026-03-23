@@ -20,16 +20,20 @@ router.get("/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.USER),
   eventController.getSingleEventController)
 
+router.get("/my-events",
+  checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
+  eventController.getMyEvents)
+
 router.patch("/updateUserEvent/:id",
-  checkAuth(Role.USER),
+  checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   eventController.updateEventController)
 
 router.delete("/:id",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.USER),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   eventController.deleteEventController)
 
 router.patch("/updateAdminEvent/:id",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  // checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   eventController.updateAdminEvent)
 
 export const eventRouter = router;

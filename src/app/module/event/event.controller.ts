@@ -61,6 +61,17 @@ export const getSingleEventController = catchAsync(async (req: Request, res: Res
   })
 })
 
+const getMyEvents = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+  const result = await eventService.getMyEvents(userId as string);
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "My events fetched successfully",
+    data: result,
+    success: true
+  })
+})
+
 const updateEventController = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const userId = req.user?.userId;
@@ -98,6 +109,7 @@ const updateAdminEvent = catchAsync(async (req: Request, res: Response) => {
 export const eventController = {
   createEvent,
   getAllEventsController,
+  getMyEvents,
   getSingleEventController,
   updateEventController,
   deleteEventController,

@@ -41,18 +41,12 @@ export interface ICreateEvent {
 export interface IUserUpdateEvent {
   title: string;
   description: string;
-  date: Date;
-  time: string;
-  venue: string;
-  banner: string;
-  type: EventType;
-  fee: number;
-  isPaid: boolean;
-  organizerId: string;
+
 }
 
 export interface IAdminUpdateEvent {
   type: EventType;
+
 }
 
 
