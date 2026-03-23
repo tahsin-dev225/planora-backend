@@ -16,11 +16,11 @@ router.post("/create-event",
 
 router.get("/", eventController.getAllEventsController)
 
-router.get("/:id",
+router.get("/get-single-event/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.USER),
   eventController.getSingleEventController)
 
-router.get("/my-events",
+router.get("/my-event",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   eventController.getMyEvents)
 

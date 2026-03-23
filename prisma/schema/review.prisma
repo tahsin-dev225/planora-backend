@@ -11,4 +11,5 @@ model Review {
   event Event @relation(fields: [eventId], references: [id])
 
   createdAt DateTime @default(now())
+   @@unique([userId, eventId])
 }

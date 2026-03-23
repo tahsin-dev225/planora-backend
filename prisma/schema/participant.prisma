@@ -12,4 +12,5 @@ model Participant {
   payment Payment? @relation("ParticipantPayment")
 
   createdAt DateTime @default(now())
+   @@unique([userId, eventId])
 }
