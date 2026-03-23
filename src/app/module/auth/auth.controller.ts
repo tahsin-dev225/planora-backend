@@ -122,11 +122,25 @@ const logOutUser = catchAsync(
   }
 )
 
+const deleteUser = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await authService.deleteUser(id as string);
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      message: "User deleted successfully ",
+      data: result,
+      success: true
+    })
+  }
+)
+
 
 export const authController = {
   registerUser,
   loginUser,
   getMe,
   getNewToken,
-  logOutUser
+  logOutUser,
+  deleteUser
 }

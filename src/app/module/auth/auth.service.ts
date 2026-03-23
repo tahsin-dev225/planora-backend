@@ -205,11 +205,25 @@ const logOutUser = async (sessionToken: string) => {
   return result;
 }
 
+const deleteUser = async (id: string) => {
+  const result = await prisma.user.update({
+    where: {
+      id
+    },
+    data: {
+      isDeleted: true
+    }
+  })
+
+  return result;
+}
+
 
 export const authService = {
   registerUser,
   loginUser,
   getMe,
   getNewToken,
-  logOutUser
+  logOutUser,
+  deleteUser
 }

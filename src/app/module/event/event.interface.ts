@@ -5,6 +5,7 @@
 //   date        DateTime
 //   time        String
 //   venue       String
+//   banner      String
 
 import { EventType } from "../../../generated/prisma/enums";
 
@@ -30,8 +31,36 @@ export interface ICreateEvent {
   date: Date;
   time: string;
   venue: string;
+  banner: string;
   type: EventType;
   fee: number;
   isPaid: boolean;
   organizerId: string;
+}
+
+export interface IUserUpdateEvent {
+  title: string;
+  description: string;
+  date: Date;
+  time: string;
+  venue: string;
+  banner: string;
+  type: EventType;
+  fee: number;
+  isPaid: boolean;
+  organizerId: string;
+}
+
+export interface IAdminUpdateEvent {
+  type: EventType;
+}
+
+
+export interface IQuery {
+  search?: string;
+  type?: "PUBLIC" | "PRIVATE";
+  isPaid?: string;
+  upcoming?: string;
+  page?: string;
+  limit?: string;
 }

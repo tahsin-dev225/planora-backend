@@ -5,6 +5,7 @@ model Event {
   date        DateTime
   time        String
   venue       String
+  banner      String
 
   type   EventType // PUBLIC / PRIVATE
   fee    Float // 0 = free
