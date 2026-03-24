@@ -22,7 +22,7 @@ enum ParticipantStatus {
   REJECTED
 }
 
-enum PaymentStatus {
+enum PaymentStatus {  
   PENDING
   SUCCESS
   FAILED

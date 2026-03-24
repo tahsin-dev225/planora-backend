@@ -19,7 +19,6 @@ import { ParticipantStatus } from "../../../generated/prisma/enums";
 
 // join event
 const joinEvent = async (eventId: string, userId: string) => {
-  // 🔍 event check
   const event = await prisma.event.findUnique({
     where: { id: eventId },
   });
@@ -28,7 +27,6 @@ const joinEvent = async (eventId: string, userId: string) => {
     throw new AppError(status.NOT_FOUND, "Event not found");
   }
 
-  // ❌ already joined check
   const alreadyJoined = await prisma.participant.findUnique({
     where: {
       userId_eventId: {
@@ -39,53 +37,67 @@ const joinEvent = async (eventId: string, userId: string) => {
   });
 
   if (alreadyJoined) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "You already joined/requested this event"
-    );
+    throw new AppError(status.BAD_REQUEST, "You already joined/requested this event");
   }
 
-  let participant_Status: ParticipantStatus = ParticipantStatus.PENDING;
+  let participantStatus: any = "PENDING";
 
-  // 🧠 logic based on event type
+  // logic
   if (event.type === "PUBLIC" && !event.isPaid) {
-    participant_Status = ParticipantStatus.APPROVED;
+    participantStatus = "APPROVED";
   }
 
-  // 🧱 create participant
+  if (event.type === "PUBLIC" && event.isPaid) {
+    participantStatus = "NEED_PAYMENT";
+  }
+
+  if (event.type === "PRIVATE" && !event.isPaid) {
+    participantStatus = "PENDING";
+  }
+
+  if (event.type === "PRIVATE" && event.isPaid) {
+    participantStatus = "PENDING"; // later NEED_PAYMENT by organizer
+  }
+
   const participant = await prisma.participant.create({
     data: {
       userId,
       eventId,
-      status: participant_Status,
+      status: participantStatus,
     },
   });
 
-  // 💰 payment case (only for public paid)
-  if (event.type === "PUBLIC" && event.isPaid) {
-    return {
-      message: "Payment required to join this event",
-      participant,
-      requiresPayment: true,
-    };
-  }
-
-  // 🔵 private paid → approve first then payment later
-  if (event.type === "PRIVATE" && event.isPaid) {
-    return {
-      message: "Join request sent. Wait for approval, then complete payment.",
-      participant,
-      requiresApproval: true,
-    };
-  }
-
   return {
-    message:
-      participant_Status === "APPROVED"
-        ? "Successfully joined the event"
-        : "Join request sent. Wait for approval",
+    message: "Request processed",
     participant,
   };
+};
+
+// for paid event approval
+const makeNeedPayment = async (participantId: string) => {
+  const participant = await prisma.participant.findUnique({
+    where: { id: participantId },
+    include: { event: true },
+  });
+
+  if (!participant) {
+    throw new AppError(404, "Participant not found");
+  }
+
+  let newStatus: any = "PENDING";
+
+  if (participant.event.isPaid) {
+    newStatus = "NEED_PAYMENT";
+  }
+
+  const updated = await prisma.participant.update({
+    where: { id: participantId },
+    data: {
+      status: newStatus,
+    },
+  });
+
+  return updated;
 };
 
 const updateMyParticipantApproval = async (payload: IUpdateParticipant, userId: string) => {
@@ -131,6 +143,7 @@ const getParticipantByEventId = async (eventId: string) => {
 
 export const participantService = {
   joinEvent,
+  makeNeedPayment,
   updateMyParticipantApproval,
   getMyParticipant,
   getParticipantByEventId
