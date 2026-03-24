@@ -74,7 +74,25 @@ const joinEvent = async (eventId: string, userId: string) => {
 };
 
 // for paid event approval
-const makeNeedPayment = async (participantId: string) => {
+const makeNeedPayment = async (participantId: string, userId: string) => {
+
+  const isOrganizerId = await prisma.participant.findUnique({
+    where: { id: participantId },
+    select: {
+      event: {
+        select: {
+          organizerId: true,
+        },
+      },
+    },
+  });
+
+  const organizerId = isOrganizerId?.event?.organizerId;
+
+  if (organizerId !== userId) {
+    throw new AppError(404, "You are not organizer of this event");
+  }
+
   const participant = await prisma.participant.findUnique({
     where: { id: participantId },
     include: { event: true },
@@ -129,6 +147,27 @@ const getMyParticipant = async (userId: string) => {
   return result;
 }
 
+const getMyPrivatePaidEvent = async (userId: string) => {
+  const result = await prisma.participant.findMany({
+    where: {
+      userId: userId,
+      event: {
+        type: "PRIVATE",
+        isPaid: true,
+      },
+      status: "PENDING",
+    },
+    include: {
+      event: {
+        include: {
+          organizer: true,
+        },
+      },
+    },
+  });
+  return result;
+}
+
 const getParticipantByEventId = async (eventId: string) => {
   const result = await prisma.participant.findMany({
     where: {
@@ -146,5 +185,6 @@ export const participantService = {
   makeNeedPayment,
   updateMyParticipantApproval,
   getMyParticipant,
+  getMyPrivatePaidEvent,
   getParticipantByEventId
 }

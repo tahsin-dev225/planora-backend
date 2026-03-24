@@ -6,7 +6,7 @@ const createParticipantValidation = z.object({
 
 const updateMyParticipantValidation = z.object({
   participantId: z.string(),
-  status: z.enum(["PENDING", "APPROVED", "REJECTED"]),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED", "NEED_PAYMENT"]),
 });
 
 export const participantValidation = {

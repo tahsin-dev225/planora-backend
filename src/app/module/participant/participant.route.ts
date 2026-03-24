@@ -13,6 +13,10 @@ router.post("/join-event",
   // validateRequest(participantValidation.createParticipantValidation),
   participantController.joinEvent)
 
+router.get("/getMyPrivatePaidEvent",
+  checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
+  participantController.getMyPrivatePaidEvent)
+
 router.patch("/makeNeedPayment/:participantId",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   participantController.makeNeedPayment)

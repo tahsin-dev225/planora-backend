@@ -21,8 +21,29 @@ const joinEvent = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const getMyPrivatePaidEvent = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const result = await participantService.getMyPrivatePaidEvent(userId);
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "Participant fetched successfully",
+    data: result,
+    success: true
+  })
+})
+
 const makeNeedPayment = catchAsync(async (req: Request, res: Response) => {
-  const result = await participantService.makeNeedPayment(req.params.participantId as string);
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+  const result = await participantService.makeNeedPayment(req.params.participantId as string, userId);
   sendResponse(res, {
     httpStatusCode: status.OK,
     message: "Participant updated successfully to need-payment",
@@ -78,5 +99,6 @@ export const participantController = {
   makeNeedPayment,
   updateMyParticipant,
   getMyParticipant,
+  getMyPrivatePaidEvent,
   getParticipantByEventId
 }
