@@ -17,9 +17,9 @@ enum EventType {
 
 enum ParticipantStatus {
   PENDING
+  NEED_PAYMENT
   APPROVED
   REJECTED
-  BANNED
 }
 
 enum PaymentStatus {

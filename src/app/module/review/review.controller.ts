@@ -21,6 +21,24 @@ const createReview = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+
+const updateMyReview = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const result = await reviewService.updateMyReview(req.body, userId);
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "Review updated successfully",
+    data: result,
+    success: true
+  })
+})
+
 export const reviewController = {
-  createReview
+  createReview,
+  updateMyReview
 }

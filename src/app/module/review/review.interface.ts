@@ -3,3 +3,9 @@ export interface ICreateReview {
   comment: string;
   eventId: string;
 }
+
+export interface IUpdateReview {
+  rating: number;
+  comment: string;
+  reviewId: string;
+}
