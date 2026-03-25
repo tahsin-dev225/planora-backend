@@ -125,7 +125,7 @@ const getSingleEvent = async (id: string) => {
         },
       },
       reviews: true,
-      // payments: true,
+      payments: true,
     },
   });
 
