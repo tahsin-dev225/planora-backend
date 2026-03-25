@@ -56,7 +56,7 @@ const loginUser = catchAsync(
 
 const getMe = catchAsync(
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     const result = await authService.getMe(userId as string);
     sendResponse(res, {
       httpStatusCode: status.OK,

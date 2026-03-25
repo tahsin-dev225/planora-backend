@@ -1,9 +1,12 @@
 model Payment {
   id String @id @default(uuid())
 
+  transactionId      String        @unique
+  stripeEventId      String?       @unique
   userId        String
   eventId       String
   participantId String? @unique
+  paymentGatewayData Json?
 
   amount      Float
   status      PaymentStatus

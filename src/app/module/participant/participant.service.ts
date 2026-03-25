@@ -2,7 +2,17 @@ import status from "http-status";
 import { prisma } from "../../lib/prisma";
 import { ICreateParticipant, IUpdateParticipant } from "./participant.interface";
 import AppError from "../../errorHalpers/AppError";
-import { ParticipantStatus } from "../../../generated/prisma/enums";
+import { ParticipantStatus, PaymentStatus } from "../../../generated/prisma/enums";
+import { envVars } from "../../../config/env";
+import { stripe } from "../../../config/stripe.config";
+import { v4 as uuidv4 } from "uuid";
+
+// enum PaymentStatus {  
+//   PENDING
+//   SUCCESS
+//   FAILED
+// }
+
 
 
 // create participant. user will join to event if the event is public then status will be approved and if the event is private then status will be pending
@@ -37,38 +47,84 @@ const joinEvent = async (eventId: string, userId: string) => {
   });
 
   if (alreadyJoined) {
-    throw new AppError(status.BAD_REQUEST, "You already joined/requested this event");
+    throw new AppError(status.BAD_REQUEST, "Already joined");
   }
 
-  let participantStatus: any = "PENDING";
-
-  // logic
-  if (event.type === "PUBLIC" && !event.isPaid) {
-    participantStatus = "APPROVED";
-  }
-
+  // 🔥 PUBLIC + PAID
   if (event.type === "PUBLIC" && event.isPaid) {
-    participantStatus = "NEED_PAYMENT";
+    return await prisma.$transaction(async (tx) => {
+      const participant = await tx.participant.create({
+        data: {
+          userId,
+          eventId,
+          status: "NEED_PAYMENT",
+        },
+      });
+
+      const transactionId = uuidv4();
+
+      const payment = await tx.payment.create({
+        data: {
+          userId,
+          eventId,
+          participantId: participant.id,
+          amount: event.fee,
+          transactionId,
+          status: PaymentStatus.PENDING,
+        },
+      });
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "payment",
+        line_items: [
+          {
+            price_data: {
+              currency: "bdt",
+              product_data: {
+                name: event.title,
+              },
+              unit_amount: event.fee * 100,
+            },
+            quantity: 1,
+          },
+        ],
+        metadata: {
+          paymentId: payment.id,
+          participantId: participant.id,
+        },
+        success_url: `${envVars.FRONTEND_URL}/payment-success`,
+        cancel_url: `${envVars.FRONTEND_URL}/payment-failed`,
+      });
+
+      return {
+        message: "Payment required",
+        paymentUrl: session.url,
+      };
+    });
   }
 
-  if (event.type === "PRIVATE" && !event.isPaid) {
-    participantStatus = "PENDING";
+  // 🟢 PUBLIC FREE
+  let statusValue: any = "PENDING";
+
+  if (event.type === "PUBLIC" && !event.isPaid) {
+    statusValue = "APPROVED";
   }
 
-  if (event.type === "PRIVATE" && event.isPaid) {
-    participantStatus = "PENDING"; // later NEED_PAYMENT by organizer
+  if (event.type === "PRIVATE") {
+    statusValue = "PENDING";
   }
 
   const participant = await prisma.participant.create({
     data: {
       userId,
       eventId,
-      status: participantStatus,
+      status: statusValue,
     },
   });
 
   return {
-    message: "Request processed",
+    message: "Joined successfully",
     participant,
   };
 };
@@ -179,6 +235,68 @@ const getParticipantByEventId = async (eventId: string) => {
   });
   return result;
 }
+
+// funcrtion for leter payment
+const payForEvent = async (participantId: string, userId: string) => {
+  const participant = await prisma.participant.findUnique({
+    where: { id: participantId },
+    include: { event: true },
+  });
+
+  if (!participant) {
+    throw new AppError(404, "Participant not found");
+  }
+
+  if (participant.userId !== userId) {
+    throw new AppError(403, "Unauthorized");
+  }
+
+  if (participant.status !== "NEED_PAYMENT") {
+    throw new AppError(400, "Payment not required");
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    const transactionId = uuidv4();
+
+    const payment = await tx.payment.create({
+      data: {
+        userId,
+        eventId: participant.eventId,
+        participantId: participant.id,
+        amount: participant.event.fee,
+        transactionId,
+        status: PaymentStatus.PENDING,
+      },
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "bdt",
+            product_data: {
+              name: participant.event.title,
+            },
+            unit_amount: participant.event.fee * 100,
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        paymentId: payment.id,
+        participantId: participant.id,
+      },
+      success_url: `${envVars.FRONTEND_URL}/payment-success`,
+      cancel_url: `${envVars.FRONTEND_URL}/payment-failed`,
+    });
+
+    return {
+      paymentUrl: session.url,
+    };
+  });
+};
 
 export const participantService = {
   joinEvent,

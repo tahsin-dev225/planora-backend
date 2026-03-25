@@ -1,7 +1,5 @@
 import express, { Application, Request, Response } from "express";
-// import { globalErrorHandler } from "./app/midlewere/globalErrorHandler";
 import { notFound } from "./app/midlewere/notFound";
-import status from "http-status";
 import cookieParser from "cookie-parser";
 import { toNodeHandler } from "better-auth/node";
 import auth from "./app/lib/auth";
@@ -10,11 +8,9 @@ import cors from "cors";
 import { envVars } from "./config/env";
 import qs from "qs";
 import { IndexRoutes } from "./app/routes";
-import AppError from "./app/errorHalpers/AppError";
+import { paymentController } from "./app/module/payment/payment.controller";
+import { globalErrorHandler } from "./app/midlewere/globalErrorHandler";
 
-// import { paymentController } from "./app/module/payment/payment.controller";
-// import cron from "node-cron"
-// import { AppointmentService } from "./app/module/appointment/appointment.service";
 
 const app: Application = express()
 app.set("query parser", (str: string) => qs.parse(str))
@@ -23,7 +19,7 @@ app.set("query parser", (str: string) => qs.parse(str))
 app.set("view engine", "ejs");
 app.set("views", path.resolve(process.cwd(), `src/app/templets`));
 
-// app.post('/webhook', express.raw({ type: 'application/json' }), paymentController.handleStripeWebhookEvent)
+app.post('/webhook', express.raw({ type: 'application/json' }), paymentController.handleStripeWebhookEvent)
 
 app.use(cors({
   origin: [envVars.FRONTEND_URL, envVars.BETTER_AUTH_URL, "http://localhost:3000"],
@@ -56,11 +52,10 @@ app.use('/api/v1', IndexRoutes)
 // Basic route
 app.get('/', async (req: Request, res: Response) => {
 
-  throw new AppError(status.BAD_REQUEST, "This is a test error from root route.")
   res.send('Hello, World!');
 });
 
-// app.use(globalErrorHandler)
+app.use(globalErrorHandler)
 app.use(notFound)
 
 
