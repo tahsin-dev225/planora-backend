@@ -64,9 +64,26 @@ const getReviewByEventId = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const deleteMyReview = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const result = await reviewService.deleteMyReview(req.params.reviewId as string, userId);
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "Review deleted successfully",
+    data: result,
+    success: true
+  })
+})
+
 export const reviewController = {
   createReview,
   updateMyReview,
   getMyReview,
-  getReviewByEventId
+  getReviewByEventId,
+  deleteMyReview
 }

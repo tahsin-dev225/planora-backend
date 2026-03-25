@@ -169,9 +169,32 @@ const getReviewByEventId = async (eventId: string) => {
   return reviews;
 }
 
+const deleteMyReview = async (reviewId: string, userId: string) => {
+  const getReview = await prisma.review.findUnique({
+    where: { id: reviewId },
+  });
+
+  if (!getReview) {
+    throw new AppError(status.NOT_FOUND, "Review not found");
+  }
+
+  if (getReview.userId !== userId) {
+    throw new AppError(status.FORBIDDEN, "You are not authorized to delete this review");
+  }
+
+  const review = await prisma.review.delete({
+    where: {
+      id: reviewId,
+    },
+  });
+
+  return review;
+}
+
 export const reviewService = {
   createReview,
   updateMyReview,
   getMyReview,
-  getReviewByEventId
+  getReviewByEventId,
+  deleteMyReview
 }

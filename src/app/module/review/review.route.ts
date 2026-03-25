@@ -25,4 +25,8 @@ router.get("/getReviewByEventId/:eventId",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   reviewController.getReviewByEventId)
 
+router.delete("/deleteMyReview/:reviewId",
+  checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
+  reviewController.deleteMyReview)
+
 export const reviewRouter = router;
