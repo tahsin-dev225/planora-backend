@@ -28,4 +28,8 @@ router.get("/all-user",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   authController.getAllUser)
 
+router.patch("/make-admin/:id",
+  checkAuth(Role.SUPER_ADMIN),
+  authController.makeAdmin)
+
 export const authRouter = router;

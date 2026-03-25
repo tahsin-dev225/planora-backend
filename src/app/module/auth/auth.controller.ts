@@ -148,6 +148,19 @@ const getAllUser = catchAsync(
   }
 )
 
+const makeAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await authService.makeAdmin(id as string);
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      message: "User made admin successfully ",
+      data: result,
+      success: true
+    })
+  }
+)
+
 export const authController = {
   registerUser,
   loginUser,
@@ -155,5 +168,6 @@ export const authController = {
   getNewToken,
   logOutUser,
   deleteUser,
-  getAllUser
+  getAllUser,
+  makeAdmin
 }

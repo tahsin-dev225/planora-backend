@@ -249,6 +249,18 @@ const getAllUser = async (query: Record<string, unknown>) => {
   };
 }
 
+const makeAdmin = async (id: string) => {
+  const result = await prisma.user.update({
+    where: {
+      id
+    },
+    data: {
+      role: "ADMIN"
+    }
+  })
+  return result;
+}
+
 export const authService = {
   registerUser,
   loginUser,
@@ -256,5 +268,6 @@ export const authService = {
   getNewToken,
   logOutUser,
   deleteUser,
-  getAllUser
+  getAllUser,
+  makeAdmin
 }
