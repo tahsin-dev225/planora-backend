@@ -135,6 +135,17 @@ const deleteUser = catchAsync(
   }
 )
 
+const getAllUser = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await authService.getAllUser();
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      message: "User fetched successfully ",
+      data: result,
+      success: true
+    })
+  }
+)
 
 export const authController = {
   registerUser,
@@ -142,5 +153,6 @@ export const authController = {
   getMe,
   getNewToken,
   logOutUser,
-  deleteUser
+  deleteUser,
+  getAllUser
 }

@@ -218,6 +218,16 @@ const deleteUser = async (id: string) => {
   return result;
 }
 
+const getAllUser = async () => {
+  const users = await prisma.user.findMany({
+    include: {
+      events: true,
+      participants: true,
+      reviews: true
+    }
+  })
+  return users;
+}
 
 export const authService = {
   registerUser,
@@ -225,5 +235,6 @@ export const authService = {
   getMe,
   getNewToken,
   logOutUser,
-  deleteUser
+  deleteUser,
+  getAllUser
 }
