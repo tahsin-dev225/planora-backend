@@ -13,6 +13,12 @@ router.post("/join-event",
   // validateRequest(participantValidation.createParticipantValidation),
   participantController.joinEvent)
 
+// for paid event payment that that got NEED_PAYMENT approval status
+router.post("/payForEvent/:participantId",
+  checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
+  participantController.payForEvent)
+
+
 router.get("/getMyPrivatePaidEvent",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   participantController.getMyPrivatePaidEvent)
@@ -33,5 +39,6 @@ router.get("/getMyParticipant",
 router.get("/getParticipantByEventId/:eventId",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   participantController.getParticipantByEventId)
+
 
 export const participantRouter = router;

@@ -17,4 +17,12 @@ router.patch("/updateMyReview",
   validateRequest(reviewValidation.updateMyReviewValidation),
   reviewController.updateMyReview)
 
+router.get("/getMyReview",
+  checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
+  reviewController.getMyReview)
+
+router.get("/getReviewByEventId/:eventId",
+  checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
+  reviewController.getReviewByEventId)
+
 export const reviewRouter = router;

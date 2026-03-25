@@ -304,5 +304,6 @@ export const participantService = {
   updateMyParticipantApproval,
   getMyParticipant,
   getMyPrivatePaidEvent,
-  getParticipantByEventId
+  getParticipantByEventId,
+  payForEvent
 }

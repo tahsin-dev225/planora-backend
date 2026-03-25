@@ -149,7 +149,29 @@ const updateMyReview = async (payload: IUpdateReview, userId: string) => {
   return review;
 }
 
+const getMyReview = async (userId: string) => {
+  const reviews = await prisma.review.findMany({
+    where: {
+      userId,
+    },
+  });
+
+  return reviews;
+}
+
+const getReviewByEventId = async (eventId: string) => {
+  const reviews = await prisma.review.findMany({
+    where: {
+      eventId,
+    },
+  });
+
+  return reviews;
+}
+
 export const reviewService = {
   createReview,
-  updateMyReview
+  updateMyReview,
+  getMyReview,
+  getReviewByEventId
 }
