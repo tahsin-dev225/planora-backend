@@ -218,15 +218,35 @@ const deleteUser = async (id: string) => {
   return result;
 }
 
-const getAllUser = async () => {
-  const users = await prisma.user.findMany({
-    include: {
-      events: true,
-      participants: true,
-      reviews: true
-    }
-  })
-  return users;
+const getAllUser = async (query: Record<string, unknown>) => {
+  const { page = "1", limit = "10" } = query;
+
+  const pageNumber = Number(page);
+  const limitNumber = Number(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      skip,
+      take: limitNumber,
+      include: {
+        events: true,
+        participants: true,
+        reviews: true
+      }
+    }),
+    prisma.user.count()
+  ]);
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+      totalPages: Math.ceil(total / limitNumber),
+    },
+    data: users,
+  };
 }
 
 export const authService = {

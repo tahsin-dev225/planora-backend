@@ -137,11 +137,12 @@ const deleteUser = catchAsync(
 
 const getAllUser = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await authService.getAllUser();
+    const result = await authService.getAllUser(req.query);
     sendResponse(res, {
       httpStatusCode: status.OK,
       message: "User fetched successfully ",
-      data: result,
+      meta: result.meta,
+      data: result.data,
       success: true
     })
   }
