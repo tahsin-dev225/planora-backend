@@ -9,4 +9,7 @@ router.get("/getStats",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   statsController.getStats);
 
+router.get('/get-banner-stats',
+  statsController.getBannerStats)
+
 export const statsRouter = router;

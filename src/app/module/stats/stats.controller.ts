@@ -22,6 +22,25 @@ const getStats = async (req: Request, res: Response) => {
   }
 }
 
+const getBannerStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await statsService.getBannerStatsData();
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Banner stats fetched successfully",
+      data: stats,
+    });
+  } catch (error) {
+    sendResponse(res, {
+      httpStatusCode: status.INTERNAL_SERVER_ERROR,
+      success: false,
+      message: "Failed to fetch banner stats",
+    });
+  }
+}
+
 export const statsController = {
   getStats,
+  getBannerStats
 }

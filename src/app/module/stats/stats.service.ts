@@ -98,6 +98,38 @@ const getUserStatsData = async (user: IRequestUser) => {
   };
 }
 
+// <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+//           <StatCard number="500+" label="Events Successfully Managed" />
+//           <StatCard number="50k+" label="Attendees Satisfied" />
+//           <StatCard number="15+" label="Years of Industry Experience" />
+//           <StatCard number="100%" label="Commitment to Excellence" />
+//         </div>
+
+
+const getBannerStatsData = async () => {
+  const totalEvents = await prisma.event.count();
+  const totalParticipants = await prisma.participant.count({
+    where: {
+      status: ParticipantStatus.APPROVED
+    }
+  });
+  const totalRevenue = await prisma.payment.aggregate({
+    _sum: {
+      amount: true
+    },
+    where: {
+      status: PaymentStatus.SUCCESS
+    }
+  });
+
+  return {
+    totalEvents,
+    totalParticipants,
+    totalRevenue,
+  };
+}
+
 export const statsService = {
   getDashboardStatsData,
+  getBannerStatsData
 }

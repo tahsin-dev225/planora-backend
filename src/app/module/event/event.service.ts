@@ -146,7 +146,14 @@ const getMyEvents = async (userId: string) => {
         },
       },
       reviews: true,
-      payments: true,
+      payments: {
+        select: {
+          id: true,
+          amount: true,
+          status: true,
+          createdAt: true,
+        }
+      },
     },
   })
 
