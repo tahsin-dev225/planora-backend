@@ -35,7 +35,6 @@ export interface ICreateEvent {
   type: EventType;
   fee: number;
   isPaid: boolean;
-  organizerId: string;
 }
 
 export interface IUserUpdateEvent {

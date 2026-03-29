@@ -70,11 +70,14 @@ const getAdminStatsData = async () => {
     }
   });
 
+  const eventsPerMonthBar = await getEventsPerMonth();
+
   return {
     totalEvents,
     toatalUsers,
     totalParticipants,
     totalRevenue,
+    eventsPerMonthBar
   };
 }
 
@@ -113,21 +116,79 @@ const getBannerStatsData = async () => {
       status: ParticipantStatus.APPROVED
     }
   });
-  const totalRevenue = await prisma.payment.aggregate({
-    _sum: {
-      amount: true
-    },
+  const totalOrganizer = await prisma.user.count({
     where: {
-      status: PaymentStatus.SUCCESS
+      role: Role.ADMIN
     }
   });
 
   return {
     totalEvents,
     totalParticipants,
-    totalRevenue,
+    totalOrganizer,
   };
 }
+
+
+// const getPieChartData = async () => {
+//   const appointmentStatusDistribution = await prisma.appointment.groupBy({
+//     by: ["status"],
+//     _count: {
+//       id: true
+//     },
+//   });
+
+//   const formatedAppointmentStatusDistribution = appointmentStatusDistribution.map(({ _count, status }) => ({
+//     status: status,
+//     count: _count.id
+//   }))
+
+//   return formatedAppointmentStatusDistribution
+// }
+
+// const getBarChartData = async () => {
+//   interface AppointmentCountByMonth {
+//     month: Date;
+//     count: BigInt;
+//   }
+//   const appointmentCountByMonth: AppointmentCountByMonth[] = await prisma.$queryRaw`
+//   SELECT 
+//     DATE_TRUNC('month', "createdAt") AS month,
+//     CAST(COUNT(*) AS INTEGER) AS count
+//   FROM "appointments"
+//   GROUP BY month
+//   ORDER BY month ASC;
+//   `;
+
+//   return appointmentCountByMonth;
+// }
+
+const getEventsPerMonth = async () => {
+  const events = await prisma.event.findMany({
+    select: {
+      createdAt: true,
+    },
+  });
+
+  // 12 months initialize
+  const monthlyStats = Array.from({ length: 12 }, (_, i) => {
+    const month = new Date(0, i).toLocaleString("en", { month: "short" });
+
+    return {
+      month,
+      total: 0,
+    };
+  });
+
+  // count events per month
+  events.forEach((event) => {
+    const monthIndex = new Date(event.createdAt).getMonth();
+    monthlyStats[monthIndex].total += 1;
+  });
+
+  return monthlyStats;
+};
+
 
 export const statsService = {
   getDashboardStatsData,

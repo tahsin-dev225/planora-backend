@@ -22,7 +22,8 @@ import { IAdminUpdateEvent, ICreateEvent, IQuery, IUserUpdateEvent } from "./eve
 // }
 
 
-const createEvent = async (payload: ICreateEvent) => {
+const createEvent = async (payload: ICreateEvent, userId: string) => {
+
   const result = await prisma.event.create({
     data: {
       title: payload.title,
@@ -34,7 +35,7 @@ const createEvent = async (payload: ICreateEvent) => {
       type: payload.type,
       fee: payload.fee,
       isPaid: payload.fee > 0 ? true : false,
-      organizerId: payload.organizerId,
+      organizerId: userId,
     }
   })
 
@@ -110,6 +111,30 @@ const getAllEvents = async (query: IQuery) => {
   };
 };
 
+const getFourUpcomingEvent = async () => {
+  const result = await prisma.event.findMany({
+    where: {
+      date: {
+        gte: new Date(),
+      },
+    },
+    orderBy: {
+      date: "asc",
+    },
+    take: 4,
+    include: {
+      organizer: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return result;
+};
 
 const getSingleEvent = async (id: string) => {
   const result = await prisma.event.findUnique({
@@ -125,7 +150,6 @@ const getSingleEvent = async (id: string) => {
         },
       },
       reviews: true,
-      payments: true,
     },
   });
 
@@ -225,5 +249,6 @@ export const eventService = {
   getMyEvents,
   updateEvent,
   deleteEvent,
-  updateAdminEvent
+  updateAdminEvent,
+  getFourUpcomingEvent
 }

@@ -1,11 +1,8 @@
 import { Router } from "express";
 import { eventController } from "./event.controller";
 import { multerUpload } from "../../../config/multer.config";
-import { validateRequest } from "../../midlewere/validateRequest";
-import { eventValidation } from "./event.validation";
 import { checkAuth } from "../../midlewere/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
-import { parseBody } from "../../midlewere/parseBody.middlewere";
 
 const router = Router();
 
@@ -15,6 +12,8 @@ router.post("/create-event",
   eventController.createEvent)
 
 router.get("/", eventController.getAllEventsController)
+
+router.get('/upcoming-events', eventController.getFourUpcomingEvent)
 
 router.get("/get-single-event/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.USER),

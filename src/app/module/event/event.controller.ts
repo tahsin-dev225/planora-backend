@@ -27,13 +27,22 @@ const createEvent = catchAsync(async (req: Request, res: Response) => {
   const payload = {
     ...parsedData,
     banner: uploadBanner.secure_url,
-    organizerId: userId,
   };
 
-  const result = await eventService.createEvent(payload);
+  const result = await eventService.createEvent(payload, userId);
   sendResponse(res, {
     httpStatusCode: status.CREATED,
     message: "Event created successfully ",
+    data: result,
+    success: true
+  })
+})
+
+const getFourUpcomingEvent = catchAsync(async (req: Request, res: Response) => {
+  const result = await eventService.getFourUpcomingEvent();
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "Four upcoming events fetched successfully",
     data: result,
     success: true
   })
@@ -113,5 +122,6 @@ export const eventController = {
   getSingleEventController,
   updateEventController,
   deleteEventController,
-  updateAdminEvent
+  updateAdminEvent,
+  getFourUpcomingEvent
 }
