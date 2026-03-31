@@ -17,10 +17,6 @@ import { ParticipantStatus } from "../../../generated/prisma/enums";
 //    @@unique([userId, eventId])
 // }
 
-export interface ICreateParticipant {
-  eventId: string;
-}
-
 export interface IUpdateParticipant {
   participantId: string;
   status: ParticipantStatus;

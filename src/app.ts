@@ -1,23 +1,20 @@
 import express, { Application, Request, Response } from "express";
-import { notFound } from "./app/midlewere/notFound";
+import notFound from './app/middleware/notFound'
 import cookieParser from "cookie-parser";
 import { toNodeHandler } from "better-auth/node";
 import auth from "./app/lib/auth";
-import path from "path";
 import cors from "cors";
 import { envVars } from "./config/env";
 import qs from "qs";
 import { IndexRoutes } from "./app/routes";
 import { paymentController } from "./app/module/payment/payment.controller";
-import { globalErrorHandler } from "./app/midlewere/globalErrorHandler";
+import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 
 
 const app: Application = express()
 app.set("query parser", (str: string) => qs.parse(str))
 
 
-app.set("view engine", "ejs");
-app.set("views", path.resolve(process.cwd(), `src/app/templets`));
 
 app.post('/webhook', express.raw({ type: 'application/json' }), paymentController.handleStripeWebhookEvent)
 
@@ -31,12 +28,12 @@ app.use(cors({
 app.use("/api/auth", toNodeHandler(auth))
 
 // Enable URL-encoded form data parsing
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Middleware to parse JSON bodies
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser())
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // cron.schedule("*/25 * * * *", async () => {
 //   try {

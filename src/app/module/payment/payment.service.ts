@@ -18,7 +18,7 @@ const handlerStripeWebhookEvent = async (event: Stripe.Event) => {
 
   switch (event.type) {
     case "checkout.session.completed": {
-      const session = event.data.object as any;
+      const session = event.data.object as Stripe.Checkout.Session;
 
       const paymentId = session.metadata?.paymentId;
       const participantId = session.metadata?.participantId;
@@ -47,7 +47,7 @@ const handlerStripeWebhookEvent = async (event: Stripe.Event) => {
               session.payment_status === "paid"
                 ? PaymentStatus.SUCCESS
                 : PaymentStatus.FAILED,
-            paymentGatewayData: session,
+            // paymentGatewayData: session as Stripe.Checkout.Session,
             stripeEventId: event.id,
           },
         });

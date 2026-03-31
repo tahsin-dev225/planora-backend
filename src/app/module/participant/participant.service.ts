@@ -1,6 +1,6 @@
 import status from "http-status";
 import { prisma } from "../../lib/prisma";
-import { ICreateParticipant, IUpdateParticipant } from "./participant.interface";
+import { IUpdateParticipant } from "./participant.interface";
 import AppError from "../../errorHalpers/AppError";
 import { EventType, ParticipantStatus, PaymentStatus } from "../../../generated/prisma/enums";
 import { envVars } from "../../../config/env";
@@ -109,7 +109,7 @@ const joinEvent = async (eventId: string, userId: string) => {
   }
 
   // 🟢 PUBLIC FREE
-  let statusValue: any = ParticipantStatus.PENDING;
+  let statusValue: ParticipantStatus = ParticipantStatus.PENDING;
 
   if (event.type === EventType.PUBLIC && !event.isPaid) {
     statusValue = ParticipantStatus.APPROVED;

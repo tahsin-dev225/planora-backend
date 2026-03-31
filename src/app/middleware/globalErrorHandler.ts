@@ -7,7 +7,6 @@ import { envVars } from "../../config/env";
 import { handlePrismaClientKnownRequestError, handlePrismaClientUnknownError, handlePrismaClientValidationError, handlerPrismaClientInitializationError, handlerPrismaClientRustPanicError } from "../errorHalpers/handlePrismaError";
 import { handleZodError } from "../errorHalpers/handleZodError";
 import AppError from "../errorHalpers/AppError";
-import { deleteUploadedFileFromGlobarErrorHandler } from "../utils/deleteUploadedFileFromGlobarErrorHandler";
 import { TErrorResponse, TErrorSources } from "../interface/error.interface";
 
 
@@ -26,7 +25,6 @@ export const globalErrorHandler = async (err: any, req: Request, res: Response, 
     //     const imageUrls = req.files.map((file) => file.path);
     //     await Promise.all(imageUrls.map(url => deleteFileFromCloudinary(url))); 
     // }
-    await deleteUploadedFileFromGlobarErrorHandler(req);
 
     let errorSources: TErrorSources[] = []
     let statusCode: number = status.INTERNAL_SERVER_ERROR;

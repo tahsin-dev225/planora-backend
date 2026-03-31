@@ -2,6 +2,7 @@ import status from "http-status";
 import AppError from "../../errorHalpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { IAdminUpdateEvent, ICreateEvent, IQuery, IUserUpdateEvent } from "./event.interface"
+import { EventWhereInput } from "../../../generated/prisma/models";
 
 
 
@@ -32,7 +33,7 @@ const getAllEvents = async (query: IQuery) => {
   const limitNumber = Number(limit);
   const skip = (pageNumber - 1) * limitNumber;
 
-  const whereCondition: any = {};
+  const whereCondition: EventWhereInput = {};
 
   if (search) {
     whereCondition.OR = [

@@ -10,7 +10,8 @@ import { envVars } from "../../config/env";
 export const checkAuth = (...authRoles: Role[]) => async (req: Request, res: Response, next: NextFunction) => {
   try {
     // session token verification
-    const sessionToken = cookieUtils.getCookie(req, "better-auth.session_token")
+    // const sessionToken = req.cookies["__Secure-auth.session_token"] || req.cookies["session_token"];
+    const sessionToken = req.cookies["better-auth.session_token"];
 
     if (!sessionToken) {
       throw new Error("Unauthorized, no session token provided");

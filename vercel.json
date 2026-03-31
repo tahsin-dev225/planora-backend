@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "functions": {
+    "dist/server.js": {
+      "includeFiles": "src/app/templets/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "dist/server.js"
+    }
+  ]
+}

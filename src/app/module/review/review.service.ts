@@ -2,6 +2,7 @@ import status from "http-status";
 import { prisma } from "../../lib/prisma";
 import { ICreateReview, IUpdateReview } from "./review.interface";
 import AppError from "../../errorHalpers/AppError";
+import { ParticipantStatus } from "../../../generated/prisma/enums";
 
 
 const createReview = async (payload: ICreateReview, userId: string) => {
@@ -32,7 +33,7 @@ const createReview = async (payload: ICreateReview, userId: string) => {
     },
   });
 
-  if (!participant || participant.status !== "APPROVED") {
+  if (!participant || participant.status !== ParticipantStatus.APPROVED) {
     throw new AppError(
       status.FORBIDDEN,
       "You must join and be approved to review this event"
@@ -108,7 +109,7 @@ const updateMyReview = async (payload: IUpdateReview, userId: string) => {
     },
   });
 
-  if (!participant || participant.status !== "APPROVED") {
+  if (!participant || participant.status !== ParticipantStatus.APPROVED) {
     throw new AppError(
       status.FORBIDDEN,
       "You must join and be approved to review this event"

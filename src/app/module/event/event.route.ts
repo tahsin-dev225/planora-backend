@@ -1,14 +1,12 @@
 import { Router } from "express";
 import { eventController } from "./event.controller";
-import { multerUpload } from "../../../config/multer.config";
-import { checkAuth } from "../../midlewere/checkAuth";
+import { checkAuth } from "../../middleware/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
 
 const router = Router();
 
 router.post("/create-event",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.USER),
-  multerUpload.single("banner"),
   eventController.createEvent)
 
 router.get("/", eventController.getAllEventsController)

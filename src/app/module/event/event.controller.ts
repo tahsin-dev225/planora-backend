@@ -8,16 +8,13 @@ import { uploadFileToCloudinary } from "../../../config/cloudinary.config";
 
 
 const createEvent = catchAsync(async (req: Request, res: Response) => {
-  const file = req.file;
-  if (!file) {
-    throw new Error("File is required");
-  }
-  const uploadBanner = await uploadFileToCloudinary(
-    file.buffer,
-    file.originalname
-  )
+  const { banner, ...eventData } = req.body;
 
-  const parsedData = JSON.parse(req.body.data);
+  if (!banner) {
+    throw new Error("Banner image is required");
+  }
+
+  const uploadBanner = await uploadFileToCloudinary(banner);
 
   const userId = req.user?.userId;
   if (!userId) {
@@ -25,7 +22,7 @@ const createEvent = catchAsync(async (req: Request, res: Response) => {
   }
 
   const payload = {
-    ...parsedData,
+    ...eventData,
     banner: uploadBanner.secure_url,
   };
 
