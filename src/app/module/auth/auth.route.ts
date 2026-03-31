@@ -8,6 +8,7 @@ const router = Router();
 router.post("/register", authController.registerUser)
 router.post("/login", authController.loginUser)
 
+
 router.get("/me",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.USER),
   authController.getMe)
@@ -24,8 +25,8 @@ router.delete("/delete-user/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   authController.deleteUser)
 
-router.get("/all-user",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+router.get("/all-users",
+  checkAuth(Role.SUPER_ADMIN),
   authController.getAllUser)
 
 router.patch("/make-admin/:id",

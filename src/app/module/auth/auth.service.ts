@@ -7,6 +7,7 @@ import { ILoginUserPayload, IRegisterUserPayload } from "./auth.inteface";
 import { jwtUtils } from "../../utils/jwt";
 import { envVars } from "../../../config/env";
 import { JwtPayload } from "jsonwebtoken";
+import { Role, UserStatus } from "../../../generated/prisma/enums";
 
 const registerUser = async (payload: IRegisterUserPayload) => {
   const { name, email, password } = payload;
@@ -75,6 +76,21 @@ const registerUser = async (payload: IRegisterUserPayload) => {
 
 const loginUser = async (payload: ILoginUserPayload) => {
   const { email, password } = payload;
+
+  const isUserExist = await prisma.user.findUnique({
+    where: {
+      email
+    }
+  })
+
+  if (!isUserExist) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
+  if (isUserExist.status === UserStatus.BANNED) {
+    throw new AppError(status.FORBIDDEN, "User is banned");
+  }
+
   const data = await auth.api.signInEmail({
     body: {
       email,
@@ -211,16 +227,17 @@ const deleteUser = async (id: string) => {
       id
     },
     data: {
-      isDeleted: true
+      isDeleted: true,
+      status: UserStatus.BANNED
     }
   })
 
   return result;
 }
 
-const getAllUser = async (query: Record<string, unknown>) => {
-  const { page = "1", limit = "10" } = query;
-
+const getAllUser = async (query: string) => {
+  const page = query || "1"
+  const limit = "8"
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
   const skip = (pageNumber - 1) * limitNumber;
@@ -249,13 +266,30 @@ const getAllUser = async (query: Record<string, unknown>) => {
   };
 }
 
+
+
+
+
 const makeAdmin = async (id: string) => {
-  const result = await prisma.user.update({
+  // check user exist or not
+  const user = await prisma.user.findUnique({
     where: {
       id
+    }
+  })
+  if (user?.role === Role.SUPER_ADMIN) {
+    throw new AppError(status.FORBIDDEN, "Super admin cannot be made admin");
+  }
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+  const result = await prisma.user.update({
+    where: {
+      id,
+      status: UserStatus.ACTIVE
     },
     data: {
-      role: "ADMIN"
+      role: user.role === Role.ADMIN ? Role.USER : Role.ADMIN
     }
   })
   return result;

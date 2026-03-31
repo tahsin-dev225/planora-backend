@@ -10,7 +10,6 @@ const router = Router();
 
 router.post("/join-event",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
-  // validateRequest(participantValidation.createParticipantValidation),
   participantController.joinEvent)
 
 // for paid event payment that that got NEED_PAYMENT approval status
@@ -23,6 +22,10 @@ router.get("/getMyPrivatePaidEvent",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   participantController.getMyPrivatePaidEvent)
 
+router.get("/getMyPrivateFreeEvent",
+  checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
+  participantController.getMyPrivateFreeEvent)
+
 router.patch("/makeNeedPayment/:participantId",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   participantController.makeNeedPayment)
@@ -32,13 +35,17 @@ router.patch("/updateMyParticipant",
   validateRequest(participantValidation.updateMyParticipantValidation),
   participantController.updateMyParticipant)
 
-router.get("/getMyParticipant",
+router.get("/getMyParticipited-events",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   participantController.getMyParticipant)
 
 router.get("/getParticipantByEventId/:eventId",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   participantController.getParticipantByEventId)
+
+router.get('/get-need-payment-participants',
+  checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
+  participantController.getNeedPaymentParticipants)
 
 
 export const participantRouter = router;

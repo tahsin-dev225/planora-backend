@@ -52,12 +52,12 @@ const auth = betterAuth({
             role: {
                 type: "string",
                 required: true,
-                defaultValue: "USER"
+                defaultValue: Role.USER
             },
             status: {
                 type: "string",
                 required: true,
-                defaultValue: "ACTIVE"
+                defaultValue: UserStatus.ACTIVE
             },
             isDeleted: {
                 type: "boolean",

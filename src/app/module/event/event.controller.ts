@@ -115,6 +115,37 @@ const updateAdminEvent = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const makeFeaturedController = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await eventService.makeFeatured(id as string);
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "Event featured successfully",
+    data: result,
+    success: true
+  })
+})
+
+const getFeaturedEvents = catchAsync(async (req: Request, res: Response) => {
+  const result = await eventService.getFeaturedEvents();
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "Featured events fetched successfully",
+    data: result,
+    success: true
+  })
+})
+
+const getAllEventsForFeature = catchAsync(async (req: Request, res: Response) => {
+  const result = await eventService.getAllEventsOnlyPagination(req.query.page as string);
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "Events fetched successfully",
+    data: result,
+    success: true
+  })
+})
+
 export const eventController = {
   createEvent,
   getAllEventsController,
@@ -123,5 +154,8 @@ export const eventController = {
   updateEventController,
   deleteEventController,
   updateAdminEvent,
-  getFourUpcomingEvent
+  getFourUpcomingEvent,
+  makeFeaturedController,
+  getFeaturedEvents,
+  getAllEventsForFeature
 }

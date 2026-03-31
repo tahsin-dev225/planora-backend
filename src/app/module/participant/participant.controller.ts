@@ -21,6 +21,22 @@ const joinEvent = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const getMyPrivateFreeEvent = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const result = await participantService.getMyPrivateFreeEvent(userId);
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "Participant fetched successfully",
+    data: result,
+    success: true
+  })
+})
+
 const getMyPrivatePaidEvent = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
 
@@ -39,13 +55,14 @@ const getMyPrivatePaidEvent = catchAsync(async (req: Request, res: Response) => 
 
 const makeNeedPayment = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
+  const status = req.body.status;
 
   if (!userId) {
     throw new Error("Unauthorized");
   }
-  const result = await participantService.makeNeedPayment(req.params.participantId as string, userId);
+  const result = await participantService.makeNeedPayment(req.params.participantId as string, userId, status);
   sendResponse(res, {
-    httpStatusCode: status.OK,
+    httpStatusCode: status.OK || 200,
     message: "Participant updated successfully to need-payment",
     data: result,
     success: true
@@ -110,12 +127,30 @@ const payForEvent = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const getNeedPaymentParticipants = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const result = await participantService.getNeedPaymentParticipants(userId);
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    message: "Participant fetched successfully",
+    data: result,
+    success: true
+  })
+})
+
 export const participantController = {
   joinEvent,
   makeNeedPayment,
   updateMyParticipant,
   getMyParticipant,
+  getMyPrivateFreeEvent,
   getMyPrivatePaidEvent,
   getParticipantByEventId,
-  payForEvent
+  payForEvent,
+  getNeedPaymentParticipants
 }

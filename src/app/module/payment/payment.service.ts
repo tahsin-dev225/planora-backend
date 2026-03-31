@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { prisma } from "../../lib/prisma";
-import { PaymentStatus } from "../../../generated/prisma/enums";
+import { ParticipantStatus, PaymentStatus } from "../../../generated/prisma/enums";
 import AppError from "../../errorHalpers/AppError";
 
 const handlerStripeWebhookEvent = async (event: Stripe.Event) => {
@@ -57,7 +57,7 @@ const handlerStripeWebhookEvent = async (event: Stripe.Event) => {
           await tx.participant.update({
             where: { id: participantId },
             data: {
-              status: "APPROVED",
+              status: ParticipantStatus.APPROVED,
             },
           });
         }

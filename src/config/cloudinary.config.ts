@@ -42,8 +42,13 @@ export const uploadFileToCloudinary = async (
         cloudinary.uploader.upload_stream(
             {
                 resource_type: "auto",
-                folder: `planora/${folder}`,
-                public_id: uniqeName,
+                public_id: `planora/${folder}/${uniqeName}`,
+
+                transformation: [
+                    { width: 1200, height: 1200, crop: "limit" },
+                    { quality: "auto:eco" },
+                    { fetch_format: "auto" }
+                ]
             },
             (error, result) => {
                 if (error) {

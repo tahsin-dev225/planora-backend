@@ -23,6 +23,9 @@ router.get("/my-event",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   eventController.getMyEvents)
 
+router.get("/featured-events",
+  eventController.getFeaturedEvents)
+
 router.patch("/updateUserEvent/:id",
   checkAuth(Role.USER, Role.ADMIN, Role.SUPER_ADMIN),
   eventController.updateEventController)
@@ -32,7 +35,15 @@ router.delete("/:id",
   eventController.deleteEventController)
 
 router.patch("/updateAdminEvent/:id",
-  // checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   eventController.updateAdminEvent)
+
+router.patch("/makeFeatured/:id",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  eventController.makeFeaturedController)
+
+router.get("/all-events/featured",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  eventController.getAllEventsForFeature)
 
 export const eventRouter = router;

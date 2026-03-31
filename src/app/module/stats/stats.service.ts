@@ -43,11 +43,14 @@ const getSuperAdminStatsData = async () => {
     }
   });
 
+  const eventsPerMonthBar = await getEventsPerMonth();
+
   return {
     totalUsers,
     totalEvents,
     totalParticipants,
     totalRevenue,
+    eventsPerMonthBar
   };
 }
 
@@ -60,7 +63,7 @@ const getAdminStatsData = async () => {
       }
     }
   );
-  const toatalUsers = await prisma.user.count();
+  const totalUsers = await prisma.user.count();
   const totalRevenue = await prisma.payment.aggregate({
     _sum: {
       amount: true
@@ -74,7 +77,7 @@ const getAdminStatsData = async () => {
 
   return {
     totalEvents,
-    toatalUsers,
+    totalUsers,
     totalParticipants,
     totalRevenue,
     eventsPerMonthBar
@@ -94,10 +97,13 @@ const getUserStatsData = async (user: IRequestUser) => {
     }
   });
 
+  const myParticipatedPerMonth = await getMyParticipatedPerMonth(user.userId);
+
   return {
     totalEvents,
     totalParticipants,
     totalRevenue,
+    myParticipatedPerMonth,
   };
 }
 
@@ -183,6 +189,33 @@ const getEventsPerMonth = async () => {
   // count events per month
   events.forEach((event) => {
     const monthIndex = new Date(event.createdAt).getMonth();
+    monthlyStats[monthIndex].total += 1;
+  });
+
+  return monthlyStats;
+};
+
+const getMyParticipatedPerMonth = async (userId: string) => {
+  const participants = await prisma.participant.findMany({
+    where: {
+      userId: userId,
+    },
+    select: {
+      createdAt: true,
+    },
+  });
+
+  const monthlyStats = Array.from({ length: 12 }, (_, i) => {
+    const month = new Date(0, i).toLocaleString("en", { month: "short" });
+
+    return {
+      month,
+      total: 0,
+    };
+  });
+
+  participants.forEach((item) => {
+    const monthIndex = new Date(item.createdAt).getMonth();
     monthlyStats[monthIndex].total += 1;
   });
 

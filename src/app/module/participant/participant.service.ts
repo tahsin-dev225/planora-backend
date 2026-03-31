@@ -2,7 +2,7 @@ import status from "http-status";
 import { prisma } from "../../lib/prisma";
 import { ICreateParticipant, IUpdateParticipant } from "./participant.interface";
 import AppError from "../../errorHalpers/AppError";
-import { ParticipantStatus, PaymentStatus } from "../../../generated/prisma/enums";
+import { EventType, ParticipantStatus, PaymentStatus } from "../../../generated/prisma/enums";
 import { envVars } from "../../../config/env";
 import { stripe } from "../../../config/stripe.config";
 import { v4 as uuidv4 } from "uuid";
@@ -33,6 +33,10 @@ const joinEvent = async (eventId: string, userId: string) => {
     where: { id: eventId },
   });
 
+  if (event?.organizerId === userId) {
+    throw new AppError(status.BAD_REQUEST, "You are organizer of this event");
+  }
+
   if (!event) {
     throw new AppError(status.NOT_FOUND, "Event not found");
   }
@@ -57,7 +61,7 @@ const joinEvent = async (eventId: string, userId: string) => {
         data: {
           userId,
           eventId,
-          status: "NEED_PAYMENT",
+          status: ParticipantStatus.NEED_PAYMENT,
         },
       });
 
@@ -105,14 +109,14 @@ const joinEvent = async (eventId: string, userId: string) => {
   }
 
   // 🟢 PUBLIC FREE
-  let statusValue: any = "PENDING";
+  let statusValue: any = ParticipantStatus.PENDING;
 
-  if (event.type === "PUBLIC" && !event.isPaid) {
-    statusValue = "APPROVED";
+  if (event.type === EventType.PUBLIC && !event.isPaid) {
+    statusValue = ParticipantStatus.APPROVED;
   }
 
-  if (event.type === "PRIVATE") {
-    statusValue = "PENDING";
+  if (event.type === EventType.PRIVATE) {
+    statusValue = ParticipantStatus.PENDING;
   }
 
   const participant = await prisma.participant.create({
@@ -130,7 +134,7 @@ const joinEvent = async (eventId: string, userId: string) => {
 };
 
 // for paid event approval
-const makeNeedPayment = async (participantId: string, userId: string) => {
+const makeNeedPayment = async (participantId: string, userId: string, status: ParticipantStatus) => {
 
   const isOrganizerId = await prisma.participant.findUnique({
     where: { id: participantId },
@@ -158,16 +162,16 @@ const makeNeedPayment = async (participantId: string, userId: string) => {
     throw new AppError(404, "Participant not found");
   }
 
-  let newStatus: any = "PENDING";
+  // let newStatus: ParticipantStatus = status;
 
-  if (participant.event.isPaid) {
-    newStatus = "NEED_PAYMENT";
-  }
+  // if (participant.event.isPaid) {
+  //   newStatus = ParticipantStatus.NEED_PAYMENT;
+  // }
 
   const updated = await prisma.participant.update({
     where: { id: participantId },
     data: {
-      status: newStatus,
+      status,
     },
   });
 
@@ -198,6 +202,43 @@ const getMyParticipant = async (userId: string) => {
           organizer: true,
         },
       },
+      payment: {
+        select: {
+          id: true,
+          transactionId: true,
+          status: true,
+          amount: true,
+        },
+      },
+    },
+  });
+  return result;
+}
+
+const getMyPrivateFreeEvent = async (userId: string) => {
+  const result = await prisma.participant.findMany({
+    where: {
+      event: {
+        type: EventType.PRIVATE,
+        isPaid: false,
+        organizerId: userId,
+      },
+      status: ParticipantStatus.PENDING,
+    },
+    include: {
+      event: {
+        include: {
+          organizer: true,
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
     },
   });
   return result;
@@ -206,17 +247,25 @@ const getMyParticipant = async (userId: string) => {
 const getMyPrivatePaidEvent = async (userId: string) => {
   const result = await prisma.participant.findMany({
     where: {
-      userId: userId,
       event: {
-        type: "PRIVATE",
+        type: EventType.PRIVATE,
         isPaid: true,
+        organizerId: userId,
       },
-      status: "PENDING",
+      status: ParticipantStatus.PENDING,
     },
     include: {
       event: {
         include: {
           organizer: true,
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
         },
       },
     },
@@ -239,7 +288,10 @@ const getParticipantByEventId = async (eventId: string) => {
 // funcrtion for leter payment
 const payForEvent = async (participantId: string, userId: string) => {
   const participant = await prisma.participant.findUnique({
-    where: { id: participantId },
+    where: {
+      id: participantId,
+
+    },
     include: { event: true },
   });
 
@@ -251,7 +303,7 @@ const payForEvent = async (participantId: string, userId: string) => {
     throw new AppError(403, "Unauthorized");
   }
 
-  if (participant.status !== "NEED_PAYMENT") {
+  if (participant.status !== ParticipantStatus.NEED_PAYMENT) {
     throw new AppError(400, "Payment not required");
   }
 
@@ -298,12 +350,43 @@ const payForEvent = async (participantId: string, userId: string) => {
   });
 };
 
+const getNeedPaymentParticipants = async (userId: string) => {
+  const result = await prisma.participant.findMany({
+    where: {
+      event: {
+        type: EventType.PRIVATE,
+        isPaid: true,
+      },
+      userId: userId,
+      status: ParticipantStatus.NEED_PAYMENT,
+    },
+    include: {
+      event: {
+        include: {
+          organizer: true,
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
+  });
+  return result;
+}
+
 export const participantService = {
   joinEvent,
   makeNeedPayment,
   updateMyParticipantApproval,
   getMyParticipant,
+  getMyPrivateFreeEvent,
   getMyPrivatePaidEvent,
   getParticipantByEventId,
-  payForEvent
+  payForEvent,
+  getNeedPaymentParticipants
 }

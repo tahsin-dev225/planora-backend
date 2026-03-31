@@ -33,6 +33,11 @@ const createEventZodValidation = z.object({
   isPaid: z.boolean()
 })
 
+const makeFeaturedZodValidation = z.object({
+  id: z.string("Id Must be string"),
+})
+
 export const eventValidation = {
-  createEventZodValidation
+  createEventZodValidation,
+  makeFeaturedZodValidation
 }

@@ -51,7 +51,7 @@ export interface IAdminUpdateEvent {
 
 export interface IQuery {
   search?: string;
-  type?: "PUBLIC" | "PRIVATE";
+  type?: EventType;
   isPaid?: string;
   upcoming?: string;
   page?: string;

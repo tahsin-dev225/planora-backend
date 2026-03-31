@@ -3,23 +3,6 @@ import AppError from "../../errorHalpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { IAdminUpdateEvent, ICreateEvent, IQuery, IUserUpdateEvent } from "./event.interface"
 
-// model Event {
-//   id          String   @id @default(uuid())
-//   title       String
-//   description String
-//   date        DateTime
-//   time        String
-//   venue       String
-//   type   EventType // PUBLIC / PRIVATE
-//   fee    Float // 0 = free
-//   isPaid Boolean
-//   organizerId String
-//   organizer   User   @relation("OrganizerEvents", fields: [organizerId], references: [id])
-//   participants Participant[]
-//   reviews      Review[]
-//   payments     Payment[]
-//   createdAt DateTime @default(now())
-// }
 
 
 const createEvent = async (payload: ICreateEvent, userId: string) => {
@@ -43,7 +26,7 @@ const createEvent = async (payload: ICreateEvent, userId: string) => {
 }
 
 const getAllEvents = async (query: IQuery) => {
-  const { search, type, upcoming, isPaid, page = "1", limit = "10" } = query;
+  const { search, type, isPaid, page = "1", limit = "10" } = query;
 
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
@@ -70,11 +53,11 @@ const getAllEvents = async (query: IQuery) => {
     whereCondition.isPaid = isPaid === "true";
   }
 
-  if (upcoming === "true") {
-    whereCondition.date = {
-      gte: new Date(),
-    };
-  }
+
+  // upcoming by default true
+  // whereCondition.date = {
+  //   gte: new Date(),
+  // };
 
   const [events, total] = await Promise.all([
     prisma.event.findMany({
@@ -82,7 +65,7 @@ const getAllEvents = async (query: IQuery) => {
       skip,
       take: limitNumber,
       orderBy: {
-        createdAt: "asc",
+        date: "desc",
       },
       include: {
         organizer: {
@@ -111,9 +94,77 @@ const getAllEvents = async (query: IQuery) => {
   };
 };
 
+const getAllEventsOnlyPagination = async (page: string,) => {
+  const limit = 8
+  const pageNumber = Number(page);
+  const limitNumber = Number(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+
+
+  const [events, total] = await Promise.all([
+    prisma.event.findMany({
+      skip,
+      take: limitNumber,
+      orderBy: {
+        createdAt: "asc",
+      },
+      include: {
+        organizer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    }),
+
+    prisma.event.count(),
+  ]);
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+      totalPage: Math.ceil(total / limitNumber),
+    },
+    data: events,
+  };
+};
+
 const getFourUpcomingEvent = async () => {
   const result = await prisma.event.findMany({
     where: {
+      date: {
+        gte: new Date(),
+      },
+    },
+    orderBy: {
+      date: "asc",
+    },
+    take: 4,
+    include: {
+      organizer: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return result;
+};
+
+
+// get four featured events up to date
+const getFeaturedEvents = async () => {
+  const result = await prisma.event.findMany({
+    where: {
+      isFeatured: true,
       date: {
         gte: new Date(),
       },
@@ -242,13 +293,40 @@ const updateAdminEvent = async (id: string, payload: IAdminUpdateEvent) => {
   return result;
 }
 
+// make featured only admin can do if makeFeature route hit then event featured will be true and if again hit then event featured will be false 
+
+const makeFeatured = async (id: string) => {
+  const event = await prisma.event.findUnique({
+    where: {
+      id
+    }
+  })
+
+  if (!event) {
+    throw new AppError(status.NOT_FOUND, "Event not found");
+  }
+
+  const result = await prisma.event.update({
+    where: {
+      id
+    },
+    data: {
+      isFeatured: !event.isFeatured,
+    }
+  })
+  return result;
+}
+
 export const eventService = {
   createEvent,
   getAllEvents,
   getSingleEvent,
   getMyEvents,
+  getFeaturedEvents,
   updateEvent,
   deleteEvent,
   updateAdminEvent,
-  getFourUpcomingEvent
+  getFourUpcomingEvent,
+  makeFeatured,
+  getAllEventsOnlyPagination
 }
