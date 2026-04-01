@@ -18,12 +18,38 @@ function fixDir(dir) {
 
     // Replace your existing content.replace block with this:
     content = content.replace(
-      /from\s+["'](\.\.?\/[^"']+)["']/g,
+      /(?:from|import)\s+["'](\.\.?\/[^"']+)["']/g,
       (match, p1) => {
         // If it already ends in .js, return the match unchanged
         if (p1.endsWith(".js")) return match;
 
-        // Otherwise, append .js
+        const importPath = path.resolve(path.dirname(full), p1);
+
+        // First check if a .js file exists
+        let isFileJs = false;
+        try {
+          isFileJs = fs.statSync(`${importPath}.js`).isFile();
+        } catch (e) {
+          // Ignore error
+        }
+
+        if (isFileJs) {
+          return match.replace(p1, `${p1}.js`);
+        }
+
+        // Check if the imported path is a directory (meaning it needs /index.js)
+        let isDir = false;
+        try {
+          isDir = fs.statSync(importPath).isDirectory();
+        } catch (e) {
+          // Ignore error
+        }
+
+        if (isDir) {
+          return match.replace(p1, `${p1}/index.js`);
+        }
+
+        // Otherwise, append .js as fallback
         return match.replace(p1, `${p1}.js`);
       },
     );
