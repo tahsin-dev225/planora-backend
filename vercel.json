@@ -1,14 +1,15 @@
 {
   "version": 2,
-  "functions": {
-    "dist/server.js": {
-      "includeFiles": "src/app/templets/**"
-    }
-  },
-  "rewrites": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "dist/server.js"
+      "src": "dist/src/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "dist/src/server.js"
     }
   ]
 }
